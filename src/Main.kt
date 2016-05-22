@@ -1,8 +1,7 @@
-import com.persesgames.shader.ShaderProgram
-import com.persesgames.shader.VertextAttributeInfo
-import org.khronos.webgl.Float32Array
-import org.khronos.webgl.WebGLBuffer
 import org.khronos.webgl.WebGLRenderingContext
+import org.w3c.dom.HTMLCanvasElement
+import org.w3c.dom.HTMLElement
+import kotlin.browser.document
 import kotlin.browser.window
 
 /**
@@ -11,87 +10,42 @@ import kotlin.browser.window
  * Time: 17:06
  */
 
-private val vertexShader = """
-    attribute vec2 a_position;
+class HTMLElements {
+    val container: HTMLElement
+    val canvas: HTMLCanvasElement
+    var webgl: WebGLRenderingContext
 
-    uniform vec4 u_viewWindow;
-
-    varying vec2 v_coord;
-
-    void main(void) {
-        v_coord = a_position + u_viewWindow.xy;
-
-        gl_Position = vec4(a_position, 0.0, 1.0);
-    }
-"""
-
-private val fragmentShader = """
-    precision mediump float;
-
-    varying vec2 v_coord;
-
-    void main(void) {
-        float xx = 0.0;
-        float yy = 0.0;
-        float xt = 0.0;
-
-        gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0);
-
-        for (int iteration = 0; iteration < 1000; iteration++) {
-            if (xx*xx + yy*yy > 4.0) {
-              float it = mod(float(iteration) * 13.0, 768.0);
-              float red = min(it, 255.0) / 255.0;
-              float green = max(0.0, min(it, 511.0) - 256.0);
-              float blue = max(0.0, min(it, 767.0) - 512.0);
-              gl_FragColor = vec4( red, green, blue, 1.0);
-              break;
-            }
-            xt = xx*xx - yy*yy + v_coord.x;
-            yy = 2.0*xx*yy + v_coord.y;
-            xx = xt;
-        }
-    }
-"""
-
-class ShaderData {
-    var offsetX: Float = 0f
-    var offsetY: Float = 0f
-}
-
-class MandelBrot(val html: HTMLElements) {
-    val webgl = html.webgl
-    val shaderProgram: ShaderProgram<ShaderData>
-    val data: ShaderData = ShaderData()
-    val attribBuffer: WebGLBuffer
-    val vertices: Float32Array
-    val start = Date().getTime()
+    var windowWidth = 0
+    var windowHeight = 0
 
     init {
-        val array: Array<Float> = arrayOf(
-          -1f,-1f,
-           1f,-1f,
-           1f, 1f,
-           1f, 1f,
-          -1f, 1f,
-          -1f,-1f
-        )
+        container = document.createElement("div") as HTMLElement
 
-        vertices = Float32Array(array.size)
-        vertices.set(array, 0)
+        canvas = document.createElement("canvas") as HTMLCanvasElement
 
-        val setter = { program: ShaderProgram<ShaderData>, data: ShaderData ->
-            program.setUniform4f("u_viewWindow", data.offsetX, data.offsetY, 0f, 0f)
+        container.setAttribute("style", "position: relative;")
+        canvas.setAttribute("style", "position: absolute; left: 0px; top: 0px; z-index: 10; width: 2000px; height: 1000px;" )
+
+        document.body!!.appendChild(container)
+        container.appendChild(canvas)
+
+        webgl = canvas.getContext("webgl") as WebGLRenderingContext
+    }
+
+    fun resize() {
+        val windowWidth = window.innerWidth.toInt()
+        val windowHeight = window.innerHeight.toInt()
+
+        if (this.windowWidth != windowWidth ||
+            this.windowHeight != windowHeight) {
+
+            this.windowWidth = windowWidth
+            this.windowHeight = windowHeight
+            canvas.setAttribute("width", "${windowWidth}px")
+            canvas.setAttribute("height", "${windowHeight}px")
+            canvas.setAttribute("style", "position: absolute; left: 0px; top: 0px; z-index: 5; width: ${windowWidth}px; height: ${windowHeight}px;")
+            webgl.viewport(0, 0, windowWidth, windowHeight)
         }
-
-        val vainfo = arrayOf(
-          VertextAttributeInfo("a_position", 2)
-        )
-
-        shaderProgram = ShaderProgram(webgl, WebGLRenderingContext.TRIANGLES, vertexShader, fragmentShader, vainfo, setter)
-
-
-        attribBuffer = webgl.createBuffer() ?: throw IllegalStateException("Unable to create webgl buffer!")
-        webgl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, attribBuffer);
     }
 
     fun getColor(mu: Double) {
@@ -113,8 +67,8 @@ class MandelBrot(val html: HTMLElements) {
 //        return Color.FromArgb(255, r, g, b);
     }
 
-/*    fun drawMandel() {
-        *//*
+    fun drawMandel() {
+        /*
         For each pixel (Px, Py) on the screen, do:
         {
           x0 = scaled x coordinate of pixel (scaled to lie in the Mandelbrot X scale (-2.5, 1))
@@ -131,7 +85,7 @@ class MandelBrot(val html: HTMLElements) {
           }
           color = palette[iteration]
           plot(Px, Py, color)
-        }*//*
+        }*/
 
         var xs: Double
         var ys: Double
@@ -177,9 +131,9 @@ class MandelBrot(val html: HTMLElements) {
             }
         }
 
-    }*/
+    }
 
-/*    fun drawJulia(xc: Double, yc: Double) {
+    fun drawJulia(xc: Double, yc: Double) {
         var xx: Double
         var yy: Double
         var xt: Double
@@ -218,28 +172,26 @@ class MandelBrot(val html: HTMLElements) {
             }
         }
 
-    }*/
+    }
 
     fun render() {
-        html.resize()
-
         webgl.clearColor(1f, 1f, 1f, 1f)
         webgl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT)
 
-        var time = (start - (Date().getTime())) / 1000.0
 
-        data.offsetX = Math.sin(time).toFloat()
-        data.offsetY = Math.cos(time).toFloat()
 
-        shaderProgram.begin(attribBuffer, data)
-
-        webgl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, vertices, WebGLRenderingContext.DYNAMIC_DRAW);
-        webgl.drawArrays(shaderProgram.drawType, 0, 6)
-
-        shaderProgram.end()
-
-        window.requestAnimationFrame {
-            render()
-        }
+//        window.requestAnimationFrame {
+//            render()
+//        }
     }
+}
+
+fun main(args: Array<String>) {
+    val html = HTMLElements()
+
+    val mandelBrot = MandelBrot(html)
+    val julia = Julia(html)
+
+    julia.render()
+    //html.drawJulia(-0.493, -0.587)
 }
