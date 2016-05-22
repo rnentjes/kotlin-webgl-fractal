@@ -41,6 +41,25 @@ class HTMLElements {
         canvas.setAttribute("style", "position: absolute; left: 0px; top: 0px; z-index: 5; width: ${windowWidth}px; height: ${windowHeight}px;" )
     }
 
+    fun getColor(mu: Double) {
+        var clr1 = mu.toInt()
+        var t2 = mu - clr1
+        var t1 = 1 - t2
+        clr1 = clr1 % 768
+
+//        int clr1 = (int)mu;
+//        double t2 = mu - clr1;
+//        double t1 = 1 - t2;
+//        clr1 = clr1 % Colors.Count;
+//        int clr2 = (clr1 + 1) % Colors.Count;
+//
+//        byte r = (byte)(Colors[clr1].R * t1 + Colors[clr2].R * t2);
+//        byte g = (byte)(Colors[clr1].G * t1 + Colors[clr2].G * t2);
+//        byte b = (byte)(Colors[clr1].B * t1 + Colors[clr2].B * t2);
+//
+//        return Color.FromArgb(255, r, g, b);
+    }
+
     fun drawMandel() {
         /*
         For each pixel (Px, Py) on the screen, do:
@@ -61,25 +80,28 @@ class HTMLElements {
           plot(Px, Py, color)
         }*/
 
-        var xs: Float
-        var ys: Float
-        var xx: Float
-        var yy: Float
-        var xt: Float
+        var xs: Double
+        var ys: Double
+        var xx: Double
+        var yy: Double
+        var xt: Double
         var iteration: Int
-        var max_iteration: Int = 511
-        var halfWindowHeight = windowHeight / 2
+        val max_iteration: Int = 767
+        val halfWindowHeight = windowHeight / 2
         var red: Int
+        var green: Int
+        var blue: Int
         var fillStyle: String
+        var mu: Double
 
         println("Window width: $windowWidth, height: $windowHeight, half: $halfWindowHeight")
         for (x in 0..windowWidth) {
             for (y in 0..halfWindowHeight) {
-                xs = (3.5f / windowWidth.toFloat()) * x - 2.5f
-                ys = 1f - ((1f / halfWindowHeight) * y)
+                xs = (4.0 / windowWidth.toFloat()) * x - 2.0
+                ys = 2.0 - ((2.0 / halfWindowHeight) * y)
 
-                xx = 0f
-                yy = 0f
+                xx = 0.0
+                yy = 0.0
                 iteration = 0
                 while(xx*xx + yy*yy < 4 && iteration < max_iteration) {
                     xt = xx*xx - yy*yy + xs
@@ -87,11 +109,18 @@ class HTMLElements {
                     xx = xt
                     iteration++
                 }
-                fillStyle = "rgb(${(iteration * 2) % 256}, ${(iteration * 3) % 256}, ${(iteration) % 256})"
                 if (iteration == max_iteration) {
                     fillStyle = "rgb(0, 0, 0)"
+                } else {
+                    mu = iteration + 1 -
+                      Math.log(Math.log(xx*xx + yy*yy)) / Math.log(2.0);
+                    iteration = (iteration * 13) % 768
+                    red = Math.min(iteration, 255)
+                    green = Math.max(0, Math.min(iteration, 511) - 256)
+                    blue = Math.max(0, Math.min(iteration, 767) - 512)
+                    fillStyle = "rgb($red, $green, $blue)"
                 }
-                //red =
+
                 canvas2d.fillStyle = fillStyle
                 canvas2d.fillRect(x.toDouble(), y.toDouble(), 1.0, 1.0)
                 canvas2d.fillRect(x.toDouble(), windowHeight - y.toDouble(), 1.0, 1.0)

@@ -20,6 +20,12 @@
         this.canvas.setAttribute('height', this.windowHeight.toString() + 'px');
         this.canvas.setAttribute('style', 'position: absolute; left: 0px; top: 0px; z-index: 5; width: ' + this.windowWidth + 'px; height: ' + this.windowHeight + 'px;');
       },
+      getColor_14dthe$: function (mu) {
+        var clr1 = mu | 0;
+        var t2 = mu - clr1;
+        var t1 = 1 - t2;
+        clr1 = clr1 % 768;
+      },
       drawMandel: function () {
         var tmp$0, tmp$1;
         var xs;
@@ -28,17 +34,20 @@
         var yy;
         var xt;
         var iteration;
-        var max_iteration = 511;
+        var max_iteration = 767;
         var halfWindowHeight = this.windowHeight / 2 | 0;
         var red;
+        var green;
+        var blue;
         var fillStyle;
+        var mu;
         Kotlin.println('Window width: ' + this.windowWidth + ', height: ' + this.windowHeight + ', half: ' + halfWindowHeight);
         tmp$0 = this.windowWidth;
         for (var x = 0; x <= tmp$0; x++) {
           tmp$1 = halfWindowHeight;
           for (var y = 0; y <= tmp$1; y++) {
-            xs = 3.5 / this.windowWidth * x - 2.5;
-            ys = 1.0 - 1.0 / halfWindowHeight * y;
+            xs = 4.0 / this.windowWidth * x - 2.0;
+            ys = 2.0 - 2.0 / halfWindowHeight * y;
             xx = 0.0;
             yy = 0.0;
             iteration = 0;
@@ -48,9 +57,16 @@
               xx = xt;
               iteration++;
             }
-            fillStyle = 'rgb(' + iteration * 2 % 256 + ', ' + iteration * 3 % 256 + ', ' + iteration % 256 + ')';
             if (iteration === max_iteration) {
               fillStyle = 'rgb(0, 0, 0)';
+            }
+             else {
+              mu = iteration + 1 - Math.log(Math.log(xx * xx + yy * yy)) / Math.log(2.0);
+              iteration = iteration * 13 % 768;
+              red = Math.min(iteration, 255);
+              green = Math.max(0, Math.min(iteration, 511) - 256);
+              blue = Math.max(0, Math.min(iteration, 767) - 512);
+              fillStyle = 'rgb(' + red + ', ' + green + ', ' + blue + ')';
             }
             this.canvas2d.fillStyle = fillStyle;
             this.canvas2d.fillRect(x, y, 1.0, 1.0);
