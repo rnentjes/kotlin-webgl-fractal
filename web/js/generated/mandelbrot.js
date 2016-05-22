@@ -4,7 +4,7 @@
     this.vertexShader_rfnujb$ = '\n    attribute vec2 a_position;\n\n    uniform vec4 u_viewWindow;\n\n    varying vec2 v_coord;\n\n    void main(void) {\n        v_coord = a_position + u_viewWindow.xy;\n\n        gl_Position = vec4(a_position, 0.0, 1.0);\n    }\n';
     this.fragmentShader_jzx1nv$ = '\n    precision mediump float;\n\n    varying vec2 v_coord;\n\n    void main(void) {\n        float xx = 0.0;\n        float yy = 0.0;\n        float xt = 0.0;\n\n        gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0);\n\n        for (int iteration = 0; iteration < 1000; iteration++) {\n            if (xx*xx + yy*yy > 4.0) {\n              float it = mod(float(iteration) * 13.0, 768.0);\n              float red = min(it, 255.0) / 255.0;\n              float green = max(0.0, min(it, 511.0) - 256.0);\n              float blue = max(0.0, min(it, 767.0) - 512.0);\n              gl_FragColor = vec4( red, green, blue, 1.0);\n              break;\n            }\n            xt = xx*xx - yy*yy + v_coord.x;\n            yy = 2.0*xx*yy + v_coord.y;\n            xx = xt;\n        }\n    }\n';
     this.vertexShader_rfnujb$ = '\n    attribute vec2 a_position;\n\n    uniform vec4 u_viewWindow;\n\n    varying vec2 v_coord;\n\n    void main(void) {\n        v_coord = a_position * u_viewWindow.zw + u_viewWindow.xy;\n\n        gl_Position = vec4(a_position, 0.0, 1.0);\n    }\n';
-    this.fragmentShader_jzx1nv$ = '\n    precision mediump float;\n\n    uniform vec2 u_julia;\n    uniform float u_iteratorOffset;\n\n    varying vec2 v_coord;\n\n    void main(void) {\n        float xx = v_coord.x;\n        float yy = v_coord.y;\n        float xt = 0.0;\n\n        gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0);\n\n        for (int iteration = 0; iteration < 1000; iteration++) {\n            if (xx*xx + yy*yy > 4.0) {\n              float mu = u_iteratorOffset + float(iteration) + 1.0 - log(log(xx*xx + yy*yy)) / log(2.0);\n\n              float it = mod(mu * 7.0, 768.0);\n\n              float red = min(it, 255.0) / 255.0;\n              float green = max(0.0, min(it, 511.0) - 256.0) / 255.0;\n              float blue = max(0.0, min(it, 767.0) - 512.0) / 255.0;\n\n              gl_FragColor = vec4( red, green, blue, 1.0);\n              break;\n            }\n            xt = xx*xx - yy*yy + u_julia.x;\n            yy = 2.0*xx*yy + u_julia.y;\n            xx = xt;\n        }\n    }\n';
+    this.fragmentShader_jzx1nv$ = '\n    precision mediump float;\n\n    uniform vec2 u_julia;\n    uniform float u_iteratorOffset;\n\n    varying vec2 v_coord;\n\n    void main(void) {\n        float xx = v_coord.x;\n        float yy = v_coord.y;\n        float xt = 0.0;\n\n        gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0);\n\n        if (xx*xx + yy*yy < 4.0) {\n            for (int iteration = 0; iteration < 1000; iteration++) {\n                if (xx*xx + yy*yy > 4.0) {\n                  float mu = u_iteratorOffset + float(iteration) + 1.0 - log(log(xx*xx + yy*yy)) / log(2.0);\n                  //mu = sqrt(mu);\n\n                  float it = mod(mu * 23.0, 768.0);\n\n                  float red = min(it, 255.0) / 255.0;\n                  float green = max(0.0, min(it, 511.0) - 256.0) / 255.0;\n                  float blue = max(0.0, min(it, 767.0) - 512.0) / 255.0;\n\n                  gl_FragColor = vec4( blue, green, red, 1.0);\n                  break;\n                }\n                xt = xx*xx - yy*yy + u_julia.x;\n                yy = 2.0*xx*yy + u_julia.y;\n                xx = xt;\n            }\n        }\n    }\n';
   }, /** @lends _ */ {
     com: Kotlin.definePackage(null, /** @lends _.com */ {
       persesgames: Kotlin.definePackage(null, /** @lends _.com.persesgames */ {
@@ -301,7 +301,7 @@
       this.html = html;
       this.webgl = this.html.webgl;
       this.data = new _.JuliaData();
-      this.start = (new Date()).getTime() - 20000;
+      this.start = (new Date()).getTime();
       var array = [-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, -1.0];
       this.vertices = new Float32Array(array.length);
       this.vertices.set(array, 0);
@@ -318,11 +318,11 @@
         this.html.resize();
         this.webgl.clearColor(1.0, 1.0, 1.0, 1.0);
         this.webgl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT);
-        var time = (this.start - (new Date()).getTime()) / 1000.0;
-        this.data.juliaX = -0.39100000262260437 + Math.sin(time / 31) / 10.0;
-        this.data.juliaY = -0.5870000123977661 + Math.cos(time / 23.07) / 10.0;
-        this.data.scaleX = 1.2999999523162842 - Math.sin(time / 10.0) * 0.8999999761581421;
-        this.data.scaleY = 1.2999999523162842 - Math.sin(time / 10.0) * 0.8999999761581421;
+        var time = (this.start - (new Date()).getTime()) / 500.0;
+        this.data.juliaX = 0.2800000011920929 + Math.sin(time / 31) / 100.0;
+        this.data.juliaY = 0.00800000037997961 + Math.cos(time / 23.07) / 100.0;
+        this.data.scaleX = 1.2999999523162842 - Math.sin(time / 10.0) * 0.5;
+        this.data.scaleY = 1.2999999523162842 - Math.sin(time / 10.0) * 0.5;
         this.data.iteratorOffset = 0.0;
         this.shaderProgram.begin_t0l48p$(this.attribBuffer, this.data);
         this.webgl.bufferData(WebGLRenderingContext.ARRAY_BUFFER, this.vertices, WebGLRenderingContext.DYNAMIC_DRAW);

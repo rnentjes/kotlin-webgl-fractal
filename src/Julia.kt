@@ -40,22 +40,25 @@ private val fragmentShader = """
 
         gl_FragColor = vec4( 0.0, 0.0, 0.0, 1.0);
 
-        for (int iteration = 0; iteration < 1000; iteration++) {
-            if (xx*xx + yy*yy > 4.0) {
-              float mu = u_iteratorOffset + float(iteration) + 1.0 - log(log(xx*xx + yy*yy)) / log(2.0);
+        if (xx*xx + yy*yy < 4.0) {
+            for (int iteration = 0; iteration < 1000; iteration++) {
+                if (xx*xx + yy*yy > 4.0) {
+                  float mu = u_iteratorOffset + float(iteration) + 1.0 - log(log(xx*xx + yy*yy)) / log(2.0);
+                  //mu = sqrt(mu);
 
-              float it = mod(mu * 7.0, 768.0);
+                  float it = mod(mu * 23.0, 768.0);
 
-              float red = min(it, 255.0) / 255.0;
-              float green = max(0.0, min(it, 511.0) - 256.0) / 255.0;
-              float blue = max(0.0, min(it, 767.0) - 512.0) / 255.0;
+                  float red = min(it, 255.0) / 255.0;
+                  float green = max(0.0, min(it, 511.0) - 256.0) / 255.0;
+                  float blue = max(0.0, min(it, 767.0) - 512.0) / 255.0;
 
-              gl_FragColor = vec4( red, green, blue, 1.0);
-              break;
+                  gl_FragColor = vec4( blue, green, red, 1.0);
+                  break;
+                }
+                xt = xx*xx - yy*yy + u_julia.x;
+                yy = 2.0*xx*yy + u_julia.y;
+                xx = xt;
             }
-            xt = xx*xx - yy*yy + u_julia.x;
-            yy = 2.0*xx*yy + u_julia.y;
-            xx = xt;
         }
     }
 """
@@ -78,7 +81,7 @@ class Julia(val html: HTMLElements) {
     val data: JuliaData = JuliaData()
     val attribBuffer: WebGLBuffer
     val vertices: Float32Array
-    val start = Date().getTime() - 20000
+    val start = Date().getTime()
 
     init {
         val array: Array<Float> = arrayOf(
@@ -116,13 +119,19 @@ class Julia(val html: HTMLElements) {
         webgl.clearColor(1f, 1f, 1f, 1f)
         webgl.clear(WebGLRenderingContext.COLOR_BUFFER_BIT)
 
-        var time = (start - (Date().getTime())) / 1000.0
+        var time = (start - (Date().getTime())) / 500.0
 
-        data.juliaX = -0.391f + (Math.sin(time / 31) / 10f).toFloat()
-        data.juliaY = -0.587f + (Math.cos(time / 23.07) / 10f).toFloat()
+//        data.juliaX = -0.391f + (Math.sin(time / 31) / 10f).toFloat()
+//        data.juliaY = -0.587f + (Math.cos(time / 23.07) / 10f).toFloat()
 
-        data.scaleX = 1.3f - Math.sin(time / 10.0).toFloat() * 0.9f
-        data.scaleY = 1.3f - Math.sin(time / 10.0).toFloat() * 0.9f
+//        data.juliaX = -0.79f + (Math.sin(time / 31) / 100f).toFloat()
+//        data.juliaY = 0.15f + (Math.cos(time / 23.07) / 100f).toFloat()
+
+        data.juliaX = 0.28f + (Math.sin(time / 31) / 100f).toFloat()
+        data.juliaY = 0.008f + (Math.cos(time / 23.07) / 100f).toFloat()
+
+        data.scaleX = 1.3f - Math.sin(time / 10.0).toFloat() * 0.5f
+        data.scaleY = 1.3f - Math.sin(time / 10.0).toFloat() * 0.5f
 
         data.iteratorOffset = 0f //time.toFloat() * 10f
 
