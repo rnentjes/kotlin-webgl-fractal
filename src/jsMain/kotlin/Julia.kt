@@ -1,11 +1,9 @@
 import com.persesgames.shader.ShaderProgram
 import com.persesgames.shader.VertextAttributeInfo
 import kotlinx.browser.window
-import kotlinx.html.InputType
 import org.khronos.webgl.Float32Array
 import org.khronos.webgl.WebGLBuffer
 import org.khronos.webgl.WebGLRenderingContext
-import kotlin.browser.window
 import kotlin.js.Date
 import kotlin.math.cos
 import kotlin.math.sin

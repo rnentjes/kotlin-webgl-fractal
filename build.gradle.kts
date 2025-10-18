@@ -31,13 +31,7 @@ kotlin {
   }
 
   sourceSets {
-    val commonMain by getting {
-      dependencies {
-        api("org.jetbrains.kotlinx:kotlinx-html:0.12.0")
-      }
-    }
-    val jsMain by getting {
-
-    }
+    val commonMain by getting
+    val jsMain by getting
   }
 }
